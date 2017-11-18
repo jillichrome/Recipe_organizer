@@ -7,6 +7,21 @@ class Mainwindow(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.geometry("400x300")
+        self.create_list_fields()
+        self.create_menu_bar()
+        self.text = Text(self)
+        container = self.create_container()
+        self.create_pages(container)
+        self.show_frame("Page_One")
+
+    def create_menu_bar(self):
+        menubar = Menu(self)
+        self.config(menu=menubar)
+        filemenu = Menu(menubar)
+        # filemenu.add_command(label = 'Open', command = self.open)
+        # menubar.add_cascade(label = 'File', menu = filemenu)
+
+    def create_list_fields(self):
         self.recipe_lst = {
             'name': StringVar(),
             'time': StringVar(),
@@ -14,38 +29,36 @@ class Mainwindow(Tk):
             'directions': StringVar()
         }
 
-        menubar = Menu(self)
-        self.config(menu=menubar)
-        filemenu = Menu(menubar)
-        # filemenu.add_command(label = 'Open', command = self.open)
-        # menubar.add_cascade(label = 'File', menu = filemenu)
-
-        self.text = Text(self)
-
+    def create_container(self):
         container = Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
         self.frames = {}
+        return container
 
+    def create_pages(self, container):
         for F in (Page_One, Page_Two, Page_Three):
+            # add attribute __name__
             page_name = F.__name__
+            # create an object
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
-
-        self.show_frame("Page_One")
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
 
-
 class Page_One(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
+        self.create_entry_fields()
+        self.create_entry_labels()
+        self.create_buttons()
 
+    def create_entry_fields(self):
         self.entry = Entry(self, textvariable=self.controller.recipe_lst['name'], width=25, bd=5)
         self.entry.grid(row=0, column=1)
         self.entry_t = Entry(self, textvariable=self.controller.recipe_lst['time'], width=25, bd=5)
@@ -57,6 +70,7 @@ class Page_One(Frame):
         # self.entry_c = Entry(self, width=25, bd=5)
         # self.entry_c.grid(row=4, column=1)
 
+    def create_entry_labels(self):
         self.lbl = Label(self, text="Name", bg="teal", fg="white")
         self.lbl.grid(row=0, column=0)
         self.lbt = Label(self, text="Total Time", bg="teal", fg="white")
@@ -68,9 +82,9 @@ class Page_One(Frame):
         # self.lbc = Label(self, text="Category", bg="teal", fg="white")
         # self.lbc.grid(row=4, column=0)
 
-
+    def create_buttons(self):
         self.button = Button(self, text="View Recipe List",
-                             command=lambda: [controller.show_frame("Page_Two"), self.print_names()])
+                             command=lambda: [self.controller.show_frame("Page_Two")])
         self.button.grid(row=1, column=2)
         self.button2 = Button(self, text="Save Recipe", command=lambda: [self.save_recipe(), self.clear_entries()])
         self.button2.grid(row=2, column=2)
@@ -129,12 +143,16 @@ class Page_Two(Frame):
         self.listbox = Listbox(self)
         self.listbox.grid(row=2, column=0, columnspan=2)
 
-    def load_recipe(self):
-        selected = listbox.get('active')
+        self.display_saved_recipes()
 
-        if selected == f_name:
-            with open('f_name.txt', 'r') as f:
-                f.read(f_name)
+    def display_saved_recipes(self):
+        for filename in os.listdir((os.getcwd() + "\Recipes")):
+            count = 0
+            self.listbox.insert(count, filename)
+            count+=1
+
+    def load_recipe(self):
+        selected = self.listbox.get('active')
 
 
 class Page_Three(Frame):
