@@ -1,11 +1,13 @@
 #!/usr/bin/python
 from tkinter import *
 import os
+import json
 
 
 class Mainwindow(Tk):
     def __init__(self):
         Tk.__init__(self)
+        self.cwd = os.getcwd()
         self.geometry("400x300")
         self.create_list_fields()
         self.create_menu_bar()
@@ -22,7 +24,7 @@ class Mainwindow(Tk):
         # menubar.add_cascade(label = 'File', menu = filemenu)
 
     def create_list_fields(self):
-        self.recipe_lst = {
+        self.recipe_dict = {
             'name': StringVar(),
             'time': StringVar(),
             'ingredient': StringVar(),
@@ -59,13 +61,13 @@ class Page_One(Frame):
         self.create_buttons()
 
     def create_entry_fields(self):
-        self.entry = Entry(self, textvariable=self.controller.recipe_lst['name'], width=25, bd=5)
+        self.entry = Entry(self, textvariable=self.controller.recipe_dict['name'], width=25, bd=5)
         self.entry.grid(row=0, column=1)
-        self.entry_t = Entry(self, textvariable=self.controller.recipe_lst['time'], width=25, bd=5)
+        self.entry_t = Entry(self, textvariable=self.controller.recipe_dict['time'], width=25, bd=5)
         self.entry_t.grid(row=1, column=1)
-        self.entry_i = Entry(self, textvariable=self.controller.recipe_lst['ingredient'], width=25, bd=5)
+        self.entry_i = Entry(self, textvariable=self.controller.recipe_dict['ingredient'], width=25, bd=5)
         self.entry_i.grid(row=2, column=1)
-        self.entry_d = Entry(self, textvariable=self.controller.recipe_lst['directions'], width=25, bd=5)
+        self.entry_d = Entry(self, textvariable=self.controller.recipe_dict['directions'], width=25, bd=5)
         self.entry_d.grid(row=3, column=1)
         # self.entry_c = Entry(self, width=25, bd=5)
         # self.entry_c.grid(row=4, column=1)
@@ -100,28 +102,34 @@ class Page_One(Frame):
         name = self.entry.get()
         self.controller.listbox("end", name)
 
-    def save_recipe(self):
-        if not os.path.exists(os.getcwd() + "\Recipes"):
-            os.makedirs(os.getcwd() + "\Recipes")
-        recipe_path = (os.getcwd() + "\Recipes")
-
-        if not os.getcwd() == recipe_path:
-            os.chdir("Recipes")
-
+    def create_py_dict(self):
         f_name = self.entry.get()
         t_name = self.entry_t.get()
         i_name = self.entry_i.get()
         d_name = self.entry_d.get()
 
-        with open(f_name + ".txt", "w") as f:
-            f.write(f_name)
-            f.write(os.linesep)
-            f.write(t_name)
-            f.write(os.linesep)
-            f.write(i_name)
-            f.write(os.linesep)
-            f.write(d_name)
-            f.close()
+        self.recipe_list = [f_name, t_name, i_name, d_name]
+        self.save_pydict = self.controller.recipe_dict
+
+        for key in self.save_pydict:
+            count = 0
+            self.save_pydict[key] = self.recipe_list[count]
+            count+=1
+
+        return f_name
+
+    def save_recipe(self):
+        if not os.path.exists(self.controller.cwd + "\Recipes"):
+            os.makedirs(self.controller.cwd + "\Recipes")
+        recipe_path = (self.controller.cwd + "\Recipes")
+
+        if os.getcwd() != recipe_path:
+            os.chdir(recipe_path)
+
+        json_file_name = self.create_py_dict()
+
+        with open(json_file_name + ".json", "w") as f:
+            json.dump(self.save_pydict, f)
 
 
 class Page_Two(Frame):
@@ -133,12 +141,15 @@ class Page_Two(Frame):
         self.label.grid(row=0, column=0)
 
         self.button3 = Button(self, text="Return Home", command=lambda: controller.show_frame("Page_One"))
-        self.button3.grid(row=0, column=1)
+        self.button3.grid(row=0, column=2)
         # self.button4 = Button(self, text = "View Recipe Names", command = self.print_names)
         # self.button4.grid(row = 1, column = 2)
         self.button5 = Button(self, text="Load Recipe",
                               command=lambda: [controller.show_frame("Page_Three"), self.load_recipe()])
         self.button5.grid(row=2, column=2)
+        self.button5 = Button(self, text="Refresh List",
+                              command=lambda: [controller.show_frame("Page_Two"), self.display_saved_recipes()])
+        self.button5.grid(row=1, column=2)
 
         self.listbox = Listbox(self)
         self.listbox.grid(row=2, column=0, columnspan=2)
@@ -146,9 +157,12 @@ class Page_Two(Frame):
         self.display_saved_recipes()
 
     def display_saved_recipes(self):
-        for filename in os.listdir((os.getcwd() + "\Recipes")):
-            count = 0
-            self.listbox.insert(count, filename)
+        self.listbox.delete(0, END)
+        if not os.path.exists(self.controller.cwd + "\Recipes"):
+            os.makedirs(self.controller.cwd + "\Recipes")
+        count = 0
+        for filename in os.listdir((self.controller.cwd + "\Recipes")):
+            self.listbox.insert(count, os.path.splitext(filename)[0])
             count+=1
 
     def load_recipe(self):
