@@ -128,8 +128,10 @@ class Page_One(Frame):
 
         json_file_name = self.create_py_dict()
 
-        with open(json_file_name + ".json", "w") as f:
-            json.dump(self.save_pydict, f)
+        print(len(json_file_name))
+        if len(json_file_name) > 0:
+            with open(json_file_name + ".json", "w") as f:
+                json.dump(self.save_pydict, f)
 
 
 class Page_Two(Frame):
