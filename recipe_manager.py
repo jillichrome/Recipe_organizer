@@ -119,9 +119,9 @@ class Page_One(Frame):
         return f_name
 
     def save_recipe(self):
-        if not os.path.exists(self.controller.cwd + "\Recipes"):
-            os.makedirs(self.controller.cwd + "\Recipes")
-        recipe_path = (self.controller.cwd + "\Recipes")
+        if not os.path.exists(os.path.join(self.controller.cwd, "Recipes")):
+            os.makedirs(os.path.join(self.controller.cwd, "Recipes"))
+        recipe_path = (os.path.join(self.controller.cwd, "Recipes"))
 
         if os.getcwd() != recipe_path:
             os.chdir(recipe_path)
@@ -158,10 +158,10 @@ class Page_Two(Frame):
 
     def display_saved_recipes(self):
         self.listbox.delete(0, END)
-        if not os.path.exists(self.controller.cwd + "\Recipes"):
-            os.makedirs(self.controller.cwd + "\Recipes")
+        if not os.path.exists(os.path.join(self.controller.cwd, "Recipes")):
+            os.makedirs(os.path.join(self.controller.cwd, "Recipes"))
         count = 0
-        for filename in os.listdir((self.controller.cwd + "\Recipes")):
+        for filename in os.listdir((os.path.join(self.controller.cwd, "Recipes"))):
             self.listbox.insert(count, os.path.splitext(filename)[0])
             count+=1
 
