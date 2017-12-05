@@ -15,6 +15,7 @@ class Mainwindow(Tk):
         container = self.create_container()
         self.create_pages(container)
         self.show_frame("Page_One")
+        self.listbox2 = Listbox(self)
 
     def create_menu_bar(self):
         menubar = Menu(self)
@@ -168,12 +169,23 @@ class Page_Two(Frame):
 
     def load_recipe(self):
         selected = self.listbox.get('active')
+        json_file = os.path.join(self.controller.cwd, "Recipes", selected) + ".json"
+        with open(json_file, "r") as f:
+            data = f.read()
+
+        json_recipe = json.loads(data)
+
+        for item in json_recipe:
+            self.controller.listbox2.insert(END, json_recipe.get(item))
 
 
 class Page_Three(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
+
+        self.controller.listbox2 = Listbox(self)
+        self.controller.listbox2.grid(row = 2, column = 0, columnspan = 4)
 
         self.button6 = Button(self, text="Go Back", command=lambda: controller.show_frame("Page_Two"))
         self.button6.grid(row=0, column=0)
