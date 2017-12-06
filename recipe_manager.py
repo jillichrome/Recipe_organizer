@@ -15,7 +15,6 @@ class Mainwindow(Tk):
         container = self.create_container()
         self.create_pages(container)
         self.show_frame("Page_One")
-        self.listbox2 = Listbox(self)
 
     def create_menu_bar(self):
         menubar = Menu(self)
@@ -41,7 +40,7 @@ class Mainwindow(Tk):
         return container
 
     def create_pages(self, container):
-        for F in (Page_One, Page_Two, Page_Three):
+        for F in (Page_One, Page_Two):
             # add attribute __name__
             page_name = F.__name__
             # create an object
@@ -143,18 +142,20 @@ class Page_Two(Frame):
         self.label.grid(row=0, column=0)
 
         self.button3 = Button(self, text="Return Home", command=lambda: controller.show_frame("Page_One"))
-        self.button3.grid(row=0, column=2)
-        # self.button4 = Button(self, text = "View Recipe Names", command = self.print_names)
-        # self.button4.grid(row = 1, column = 2)
-        self.button5 = Button(self, text="Load Recipe",
-                              command=lambda: [controller.show_frame("Page_Three"), self.load_recipe()])
-        self.button5.grid(row=2, column=2)
+        self.button3.grid(row=1, column=0)
+
+        self.button4 = Button(self, text="Load Recipe",command=lambda:[controller.show_frame("Page_Two"), self.load_recipe()])
+        self.button4.grid(row=0, column = 1)
+
         self.button5 = Button(self, text="Refresh List",
                               command=lambda: [controller.show_frame("Page_Two"), self.display_saved_recipes()])
-        self.button5.grid(row=1, column=2)
+        self.button5.grid(row=1, column=1)
 
         self.listbox = Listbox(self)
         self.listbox.grid(row=2, column=0, columnspan=2)
+
+        self.listbox2 = Listbox(self)
+        self.listbox2.grid(row = 2, column = 2, columnspan = 2)
 
         self.display_saved_recipes()
 
@@ -168,6 +169,7 @@ class Page_Two(Frame):
             count+=1
 
     def load_recipe(self):
+        self.listbox2.delete(0,END)
         selected = self.listbox.get('active')
         json_file = os.path.join(self.controller.cwd, "Recipes", selected) + ".json"
         with open(json_file, "r") as f:
@@ -176,19 +178,8 @@ class Page_Two(Frame):
         json_recipe = json.loads(data)
 
         for item in json_recipe:
-            self.controller.listbox2.insert(END, json_recipe.get(item))
+            self.listbox2.insert(END,'{}: {}'.format(item, json_recipe.get(item)))
 
-
-class Page_Three(Frame):
-    def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
-        self.controller = controller
-
-        self.controller.listbox2 = Listbox(self)
-        self.controller.listbox2.grid(row = 2, column = 0, columnspan = 4)
-
-        self.button6 = Button(self, text="Go Back", command=lambda: controller.show_frame("Page_Two"))
-        self.button6.grid(row=0, column=0)
 
 
 if __name__ == "__main__":
