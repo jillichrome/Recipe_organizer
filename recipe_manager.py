@@ -111,8 +111,8 @@ class Page_One(Frame):
         self.recipe_list = [f_name, t_name, i_name, d_name]
         self.save_pydict = self.controller.recipe_dict
 
+        count = 0
         for key in self.save_pydict:
-            count = 0
             self.save_pydict[key] = self.recipe_list[count]
             count+=1
 
