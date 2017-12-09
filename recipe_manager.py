@@ -28,8 +28,11 @@ class Mainwindow(Tk):
             'name': StringVar(),
             'time': StringVar(),
             'ingredient': StringVar(),
+            'category' : StringVar(),
             'directions': StringVar()
         }
+
+        self.option_list = ['', 'breakfast', 'lunch', 'dinner']
 
     def create_container(self):
         container = Frame(self)
@@ -61,28 +64,32 @@ class Page_One(Frame):
         self.create_buttons()
 
     def create_entry_fields(self):
-        self.entry = Entry(self, textvariable=self.controller.recipe_dict['name'], width=25, bd=5)
-        self.entry.grid(row=0, column=1)
-        self.entry_t = Entry(self, textvariable=self.controller.recipe_dict['time'], width=25, bd=5)
-        self.entry_t.grid(row=1, column=1)
-        self.entry_i = Entry(self, textvariable=self.controller.recipe_dict['ingredient'], width=25, bd=5)
-        self.entry_i.grid(row=2, column=1)
-        self.entry_d = Entry(self, textvariable=self.controller.recipe_dict['directions'], width=25, bd=5)
-        self.entry_d.grid(row=3, column=1)
-        # self.entry_c = Entry(self, width=25, bd=5)
-        # self.entry_c.grid(row=4, column=1)
+        self.entry = Entry(self, width=25, bd=3)
+        self.entry.grid(row=0, column=1, pady=5)
+        self.entry_t = Entry(self, width=25, bd=3)
+        self.entry_t.grid(row=1, column=1, pady=5)
+        self.entry_i = Entry(self, width=25, bd=3)
+        self.entry_i.grid(row=2, column=1, pady=5)
+        self.entry_ol = StringVar()
+        self.entry_ol.set(self.controller.option_list[0])
+        self.entry_c = OptionMenu(self, self.entry_ol, *self.controller.option_list, command=self.optmenuupdate)
+        self.entry_c.grid(row=3, column=1)
+        self.entry_d = Text(self, height=10, width=19, bd=3)
+        self.entry_d.grid(row=4, column=1)
+
 
     def create_entry_labels(self):
-        self.lbl = Label(self, text="Name", bg="teal", fg="white")
+        self.lbl = Label(self, text="Name", fg="black")
         self.lbl.grid(row=0, column=0)
-        self.lbt = Label(self, text="Total Time", bg="teal", fg="white")
+        self.lbt = Label(self, text="Total Time", fg="black")
         self.lbt.grid(row=1, column=0)
-        self.lbi = Label(self, text="Ingredients", bg="teal", fg="white")
+        self.lbi = Label(self, text="Ingredients", fg="black")
         self.lbi.grid(row=2, column=0)
-        self.lbd = Label(self, text="Directions", bg="teal", fg="white")
-        self.lbd.grid(row=3, column=0)
-        # self.lbc = Label(self, text="Category", bg="teal", fg="white")
-        # self.lbc.grid(row=4, column=0)
+        self.lbc = Label(self, text="Category", fg="white")
+        self.lbc.grid(row=3, column=0)
+        self.lbd = Label(self, text="Directions", fg="black")
+        self.lbd.grid(row=4, column=0)
+
 
     def create_buttons(self):
         self.button = Button(self, text="View Recipe List",
@@ -95,20 +102,28 @@ class Page_One(Frame):
         self.entry.delete(0, "end")
         self.entry_t.delete(0, "end")
         self.entry_i.delete(0, "end")
-        self.entry_d.delete(0, "end")
+        self.entry_ol.set(self.controller.option_list[0])
+        self.entry_d.delete(1.0, END)
+
         self.entry.focus()
 
     def print_names(self):
         name = self.entry.get()
         self.controller.listbox("end", name)
 
+    def optmenuupdate(self, value):
+        for i in self.controller.option_list:
+            if value == i:
+                self.c_name = i
+
     def create_py_dict(self):
         f_name = self.entry.get()
         t_name = self.entry_t.get()
         i_name = self.entry_i.get()
-        d_name = self.entry_d.get()
+        c_name = self.c_name
+        d_name = self.entry_d.get("1.0", END)
 
-        self.recipe_list = [f_name, t_name, i_name, d_name]
+        self.recipe_list = [f_name, t_name, i_name, c_name, d_name]
         self.save_pydict = self.controller.recipe_dict
 
         count = 0
@@ -179,7 +194,6 @@ class Page_Two(Frame):
 
         for item in json_recipe:
             self.listbox2.insert(END,'{}: {}'.format(item, json_recipe.get(item)))
-
 
 
 if __name__ == "__main__":
