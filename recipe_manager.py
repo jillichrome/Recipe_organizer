@@ -31,16 +31,16 @@ class Mainwindow(Tk):
                 '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
     def on_validate(self, d, i, P, s, S, v, V, W):
-        self.text.delete("1.0", "end")
-        self.text.insert("end","on_validate:\n")
-        self.text.insert("end","d='%s'\n" % d)
-        self.text.insert("end","i='%s'\n" % i)
-        self.text.insert("end","P='%s'\n" % P)
-        self.text.insert("end","s='%s'\n" % s)
-        self.text.insert("end","S='%s'\n" % S)
-        self.text.insert("end","v='%s'\n" % v)
-        self.text.insert("end","V='%s'\n" % V)
-        self.text.insert("end","W='%s'\n" % W)
+        self.text.delete('1.0', 'end')
+        self.text.insert('end','on_validate:\n')
+        self.text.insert('end',"d='%s'\n" % d)
+        self.text.insert('end',"i='%s'\n" % i)
+        self.text.insert('end',"P='%s'\n" % P)
+        self.text.insert('end',"s='%s'\n" % s)
+        self.text.insert('end',"S='%s'\n" % S)
+        self.text.insert('end',"v='%s'\n" % v)
+        self.text.insert('end',"V='%s'\n" % V)
+        self.text.insert('end',"W='%s'\n" % W)
 
         if S.isdigit() or S == '.':
             return True
@@ -207,7 +207,12 @@ class Page_two(Frame):
         self.button5 = Button(self, text='All Recipes',
                               command=lambda: [self.display_saved_recipes(), self.cat_ol_var.set('All')])
         self.button5.grid(row=0, column=1)
-
+        self.button6 = Button(self, text='Delete Recipe',
+                              command=lambda: [self.delete_recipe(), self.display_saved_recipes()])
+        self.button6.grid(row=0, column=3, stick=E)
+        #self.button7 = Button(self, text='Edit Recipe',
+        #                      command=lambda: [self.edit_recipe, self.display_saved_recipes()])
+        #self.button7.grid(row=1, column=3, sticky=E)
         self.cat_ol_var = StringVar()
         self.cat_ol_var.set('All')
         self.cat_ol = OptionMenu(self, self.cat_ol_var, *self.controller.option_list, command=self.refine_recipe_list)
@@ -282,6 +287,12 @@ class Page_two(Frame):
             elif json_recipe['category'] == value:
                 self.listbox.insert(count, os.path.splitext(filename)[0])
                 count+=1
+
+    def delete_recipe(self):
+        selected = self.listbox.get('active')
+        if messagebox.askyesno('Confirm', 'Are you sure you want to delete ' + os.path.splitext(selected)[0] + '?'):
+            delete = (os.path.join(self.controller.cwd, 'Recipes', selected) + '.json')
+            os.remove(delete)
 
 
 if __name__ == '__main__':
