@@ -19,7 +19,7 @@ class Mainwindow(Tk):
     def create_list_fields(self):
         self.recipe_dict = {
             'name': StringVar(),
-            'time': StringVar(),
+            'time': IntVar(),
             'ingredients': StringVar(),
             'category' : StringVar(),
             'directions': StringVar()
@@ -27,20 +27,12 @@ class Mainwindow(Tk):
 
         self.option_list = ['All', 'Breakfast', 'Lunch', 'Dinner']
 
-        self.vcmd = (self.register(self.on_validate),
-                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        self.vcmd = (self.register(self.on_validate), '%S')
 
-    def on_validate(self, d, i, P, s, S, v, V, W):
+    def on_validate(self, S):
         self.text.delete('1.0', 'end')
         self.text.insert('end','on_validate:\n')
-        self.text.insert('end',"d='%s'\n" % d)
-        self.text.insert('end',"i='%s'\n" % i)
-        self.text.insert('end',"P='%s'\n" % P)
-        self.text.insert('end',"s='%s'\n" % s)
         self.text.insert('end',"S='%s'\n" % S)
-        self.text.insert('end',"v='%s'\n" % v)
-        self.text.insert('end',"V='%s'\n" % V)
-        self.text.insert('end',"W='%s'\n" % W)
 
         if S.isdigit() or S == '.':
             return True
@@ -58,9 +50,7 @@ class Mainwindow(Tk):
 
     def create_pages(self, container):
         for F in (Page_one, Page_two):
-            # add attribute __name__
             page_name = F.__name__
-            # create an object
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky='nsew')
@@ -73,7 +63,8 @@ class Mainwindow(Tk):
         self.geometry('375x320')
 
     def set_geo_page_two(self):
-        self.geometry('800x400')
+        self.geometry('820x470')
+
 
 class Page_one(Frame):
     def __init__(self, parent, controller):
@@ -179,7 +170,6 @@ class Page_one(Frame):
 
         for i in self.recipe_list:
             if len(i) > 1:
-                print(len(i))
                 continue
             else:
                 self.bell()
@@ -189,14 +179,12 @@ class Page_one(Frame):
         with open(json_file_name + '.json', 'w') as f:
             json.dump(self.save_pydict, f)
         self.clear_entries()
+        self.controller.editing = 0
 
 class Page_two(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-
-        #self.label = Label(self, text='Recipe Page')
-        #self.label.grid(row=0, column=0)
 
         self.button3 = Button(self, text='Return Home', command=lambda: [controller.show_frame('Page_one'), self.controller.set_geo_page_one()])
         self.button3.grid(row=0, column=0)
@@ -210,13 +198,13 @@ class Page_two(Frame):
         self.button6 = Button(self, text='Delete Recipe',
                               command=lambda: [self.delete_recipe(), self.display_saved_recipes()])
         self.button6.grid(row=0, column=3, stick=E)
-        #self.button7 = Button(self, text='Edit Recipe',
-        #                      command=lambda: [self.edit_recipe, self.display_saved_recipes()])
-        #self.button7.grid(row=1, column=3, sticky=E)
+        self.button7 = Button(self, text='Edit Recipe',
+                              command=lambda: [self.edit_recipe()])
+        self.button7.grid(row=1, column=3, sticky=E)
         self.cat_ol_var = StringVar()
         self.cat_ol_var.set('All')
         self.cat_ol = OptionMenu(self, self.cat_ol_var, *self.controller.option_list, command=self.refine_recipe_list)
-        self.cat_ol.grid(row=1, column=1,)
+        self.cat_ol.grid(row=1, column=1)
 
         self.listbox = Listbox(self, height=24)
         self.listbox.grid(row=2, column=0, columnspan=2, rowspan=2)
@@ -294,6 +282,33 @@ class Page_two(Frame):
             delete = (os.path.join(self.controller.cwd, 'Recipes', selected) + '.json')
             os.remove(delete)
 
+    def edit_recipe(self):
+        self.controller.frames['Page_one'].clear_entries()
+        selected = self.listbox.get('active')
+        json_file = os.path.join(self.controller.cwd, 'Recipes', selected) + '.json'
+        with open(json_file, 'r') as f:
+            data = f.read()
+
+        json_recipe = json.loads(data)
+
+        for item in json_recipe:
+            if item == 'name':
+                (self.controller.frames['Page_one'].entry.insert(0, json_recipe.get(item)))
+            if item == 'time':
+                t_list = json_recipe.get(item)
+                (self.controller.frames['Page_one'].entry_th.delete(0, END))
+                (self.controller.frames['Page_one'].entry_th.insert(0, t_list[0]))
+                (self.controller.frames['Page_one'].entry_tm.delete(0, END))
+                (self.controller.frames['Page_one'].entry_tm.insert(0, t_list[1]))
+            if item == 'ingredients':
+                (self.controller.frames['Page_one'].entry_i.insert(0, json_recipe.get(item)))
+            if item == 'category':
+                (self.controller.frames['Page_one'].entry_ol.set(json_recipe.get(item)))
+            if item == 'directions':
+                (self.controller.frames['Page_one'].entry_d.insert(1.0, json_recipe.get(item)))
+
+        self.controller.show_frame('Page_one')
+        self.controller.set_geo_page_one()
 
 if __name__ == '__main__':
     app = Mainwindow()
